@@ -6,6 +6,8 @@ from pydantic import ConfigDict, validate_call
 import matplotlib.colors as mcolors
 import numpy as np
 
+import plot
+
 def load_df(input):
 	df = pd.read_csv(args.input)
 
@@ -17,18 +19,14 @@ def load_df(input):
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(
-		prog="multilayer-perceptron",
-		description="Classify cell nuclei"
+		prog="total-perspective-vortex",
+		description="Realtime EEG predictor"
 	)
 
 	subparser = parser.add_subparsers(dest="task")
 
-	describe_parser = subparser.add_parser('describe')
-	describe_parser.add_argument('--input', type=argparse.FileType('r'), default='./data/train.csv')
-
-
 	plot_parser = subparser.add_parser('plot')
-	plot_parser.add_argument('--input', type=argparse.FileType('r'), default='./data/train.csv')
+	plot_parser.add_argument('--input', type=str, default='./data/S001/S001R01.edf')
 
 	train_parser = subparser.add_parser('train')
 	
@@ -54,24 +52,21 @@ if __name__ == "__main__":
 	predict_parser.add_argument('--input', type=argparse.FileType('r'), default='./data/validate.csv')
 	predict_parser.add_argument('-w', '--weights', type=argparse.FileType('r'), default='./output/weights.json')
 
+	args = parser.parse_args()
 
 
 
 	args = parser.parse_args()
 
 	match args.task:
-		case "describe":
-			describe.describe(load_df(args.input))
 		case "plot":
-			plot.plot(load_df(args.input))
-		case "split":
-			split_dataset(args.input, args.validation_pct, args.train_path, args.validate_path)
-		case "train":
-			train.run(args.input, args.output, args.config, args.iterations, args.learning_rate)
-		case "predict":
-			predict.predict(args.weights, args.input, args.config)
-		case "train_test":
-			sklearn_example.run(load_df(args.input))
+			plot.plot(args.input)
+		# case "split":
+		# 	split_dataset(args.input, args.validation_pct, args.train_path, args.validate_path)
+		# case "train":
+		# 	train.run(args.input, args.output, args.config, args.iterations, args.learning_rate)
+		# case "predict":
+		# 	predict.predict(args.weights, args.input, args.config)
 		case _:
 			parser.print_help()
 			exit(1)
