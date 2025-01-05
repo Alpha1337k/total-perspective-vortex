@@ -30,11 +30,15 @@ def plot_signals(outfile_base: str, raw):
 def plot(path: str):
 	builtin_montages = mne.channels.get_builtin_montages(descriptions=True)
 
-	easycap_montage = mne.channels.make_standard_montage("easycap-M1")
+	for montage_name, montage_description in builtin_montages:
+		print(f"{montage_name}: {montage_description}")
 
-	easycap_montage.plot()
+	# montage = mne.channels.make_standard_montage("biosemi64")
+	montage = mne.channels.read_custom_montage("./data/custom_fixture.txt")
 
-	print(sorted(easycap_montage.ch_names))
+	montage.plot()
+
+	print(sorted(montage.ch_names))
 
 	plt.savefig(f"./results/headcap.png")
 	plt.clf()
@@ -44,14 +48,15 @@ def plot(path: str):
 
 		print(sorted(raw.ch_names))
 
-		raw.rename_channels(lambda n: n.replace('.', '').upper().replace('Z', 'z'))
+		raw.rename_channels(lambda n: n.replace('.', '').upper().replace('Z', 'z').replace('FP', 'Fp'))
 
 		raw.filter(l_freq=1.0, h_freq=None)
 
 		print(raw)
 		print(raw.info)
 
-		# raw.set_montage(easycap_montage)
+		# We are missing two channels. T10 T9
+		raw.set_montage(montage, on_missing='ignore')
 
 		raw.compute_psd().plot(picks="data", exclude="bads", amplitude=True)
 
