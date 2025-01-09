@@ -38,7 +38,11 @@ def plot(path: str):
 	plt.savefig(f"./results/headcap.png")
 	plt.clf()
 
-	for file in sorted(glob.glob("./data/S001/*.edf")):
+	files = sorted(glob.glob("./data/S001/*.edf"))
+
+	files = ['./data/S001/S001R03.edf']
+
+	for file in files:
 		raw = mne.io.read_raw_edf(file, preload=True)
 
 		raw.rename_channels(lambda n: n.replace('.', '').upper().replace('Z', 'z').replace('FP', 'Fp'))
@@ -51,7 +55,7 @@ def plot(path: str):
 		# We are missing two channels. T10 T9
 		raw.set_montage(montage, on_missing='ignore')
 
-		raw.compute_psd().plot(picks="data", exclude="bads", amplitude=True)
+		raw.compute_psd().plot(picks="data", amplitude=True)
 
 		outfile_base = file.replace('data', 'results').replace('.edf', '')
 		
@@ -75,13 +79,16 @@ def plot(path: str):
 		for channel_type, ratio in explained_var_ratio.items():
 			print(f"Fraction of {channel_type} variance explained by all components: {ratio}")
 
-		explained_var_ratio = ica.get_explained_variance_ratio(
-			raw, components=[0], ch_type="eeg"
-		)
 
 		ica.plot_sources(raw, show_scrollbars=False)
 
 		plt.savefig(f"{outfile_base}_ica_sources.png")
+
+		plt.clf()
+
+		ica.plot_overlay(raw, exclude=[0, 1], picks="eeg")
+
+		plt.savefig(f"{outfile_base}_ica_exclude.png")
 
 		plt.clf()
 
@@ -91,9 +98,13 @@ def plot(path: str):
 
 		plt.clf()
 
-		ica.exclude = [0, 1]		
-
-		ica.apply(raw)
+		ica.apply(raw, exclude = [0, 1])
 
 		plot_signals(f"{outfile_base}_applied", raw)
+
+		plt.savefig(f"{outfile_base}_ica_components.png")
+
+		plt.clf()
+
+		exit(1)
 
