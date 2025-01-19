@@ -1,12 +1,8 @@
-from matplotlib import pyplot as plt
-from matplotlib.ticker import PercentFormatter
 import pandas as pd
 import argparse
-from pydantic import ConfigDict, validate_call
-import matplotlib.colors as mcolors
-import numpy as np
 
 import plot
+import train
 
 def load_df(input):
 	df = pd.read_csv(args.input)
@@ -30,11 +26,11 @@ if __name__ == "__main__":
 
 	train_parser = subparser.add_parser('train')
 	
-	train_parser.add_argument('--input', type=argparse.FileType('r'), default='./data/train.csv')
-	train_parser.add_argument('-i', '--iterations', default='200', type=int)
-	train_parser.add_argument('--learning-rate', default='0.5', type=float)
-	train_parser.add_argument('-o', '--output', type=argparse.FileType('w'), default='output/weights.json')
-	train_parser.add_argument('-c', '--config', type=argparse.FileType('r'), default='./config.py')
+	# train_parser.add_argument('--input', type=argparse.FileType('r'), default='./data/train.csv')
+	# train_parser.add_argument('-i', '--iterations', default='200', type=int)
+	# train_parser.add_argument('--learning-rate', default='0.5', type=float)
+	# train_parser.add_argument('-o', '--output', type=argparse.FileType('w'), default='output/weights.json')
+	# train_parser.add_argument('-c', '--config', type=argparse.FileType('r'), default='./config.py')
 
 
 	split = subparser.add_parser('split')
@@ -61,6 +57,8 @@ if __name__ == "__main__":
 	match args.task:
 		case "plot":
 			plot.plot(args.input)
+		case "train":
+			train.train()
 		# case "split":
 		# 	split_dataset(args.input, args.validation_pct, args.train_path, args.validate_path)
 		# case "train":

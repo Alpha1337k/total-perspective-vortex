@@ -1,7 +1,17 @@
 import glob
+from typing import List
 from matplotlib import pyplot as plt
-import mne
+from mne.io import read_raw_edf
 from pydantic import validate_call
+from mne.channels import get_builtin_montages, read_custom_montage, make_standard_montage
+
+@validate_call
+def is_target_neuron(id: str) -> bool:
+	return id.startswith('C') or id.startswith('T') or (id.startswith('F') and len(id) == 3 and id.startswith('Fp') == False)
+
+@validate_call
+def make_exclude_list(ch_names: List[str]) -> List[str]:
+	return list(filter(lambda x: is_target_neuron(x) == False, ch_names))
 
 @validate_call
 def plot_signals(outfile_base: str, raw):
@@ -9,7 +19,7 @@ def plot_signals(outfile_base: str, raw):
 
 	fig = plt.figure(figsize=(64, 1))
 
-	for i in range(64):
+	for i in range(len(raw.ch_names)):
 		selection = raw[i, 0 : int(raw.info['sfreq']) * 60]
 
 		x = selection[1]
@@ -28,32 +38,37 @@ def plot_signals(outfile_base: str, raw):
 
 @validate_call
 def plot(path: str):
-	builtin_montages = mne.channels.get_builtin_montages(descriptions=True)
+	builtin_montages = get_builtin_montages(descriptions=True)
 
-	# montage = mne.channels.make_standard_montage("biosemi64")
-	montage = mne.channels.read_custom_montage("./data/custom_fixture.txt")
+	montage = make_standard_montage("standard_1005")
+	montage = read_custom_montage("./data/custom_fixture.txt")
 
 	montage.plot()
 
 	plt.savefig(f"./results/headcap.png")
 	plt.clf()
 
-	files = sorted(glob.glob("./data/S001/*.edf"))
+	files = sorted(glob.glob("./data/S002/*.edf"))
 
-	files = ['./data/S001/S001R03.edf']
+	# files = ['./data/S001/S001R03.edf']
+
+	excludes = make_exclude_list(montage.ch_names)
 
 	for file in files:
-		raw = mne.io.read_raw_edf(file, preload=True)
+		raw = read_raw_edf(file, preload=True)
 
 		raw.rename_channels(lambda n: n.replace('.', '').upper().replace('Z', 'z').replace('FP', 'Fp'))
 
-		raw = raw.filter(l_freq=2.0, h_freq=75.0)
+		raw = raw.filter(l_freq=2.0, h_freq=75.0, fir_design="firwin", skip_by_annotation="edge")
 
 		print(raw)
 		print(raw.info)
 
-		# We are missing two channels. T10 T9
-		raw.set_montage(montage, on_missing='ignore')
+		raw.notch_filter(60)
+
+		raw.drop_channels(excludes)
+
+		raw.set_montage(montage)
 
 		raw.compute_psd().plot(picks="data", amplitude=True)
 
@@ -65,7 +80,7 @@ def plot(path: str):
 
 		print("\n\nPreProcessing")
 
-		ica = mne.preprocessing.ICA(max_iter="auto", n_components=15)
+		ica = mne.preprocessing.ICA(max_iter="auto", n_components=10)
 
 		ica.fit(raw)
 

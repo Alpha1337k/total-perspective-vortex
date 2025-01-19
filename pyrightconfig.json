@@ -1,6 +1,7 @@
 {
-    "ignore": [
+    "exclude": [
         "results",
-		"data"
+		"data",
+		"data/**",
     ],
 }
