@@ -8,8 +8,10 @@ from mne.channels import get_builtin_montages, read_custom_montage, make_standar
 
 @validate_call
 def is_target_neuron(id: str) -> bool:
-	return True
-	# return id.find('C') != -1 or id.find('F') != -1
+	if (id.find('z') != -1 or id.find('Tp') != -1):
+		return False
+	
+	return id.find('C') != -1 or id.find('F') != -1 or id.startswith("T")
 
 @validate_call
 def make_exclude_list(ch_names: List[str]) -> List[str]:
