@@ -144,48 +144,6 @@ def train():
 			scores = cross_val_score(pipe, X, Y, cv=KFold(n_splits=5, shuffle = True))
 			print(f"{100 * scores.mean():0.2f}% accuracy with a standard deviation of {100 * scores.std():0.2f}%" )
 
-			# locations = [
-			# 	np.where(Y_train == -1)[0],
-			# 	np.where(Y_train == 0)[0],
-			# 	# np.where(Y_train == 1)[0],
-			# ]
-
-			# T_0 = X_train[locations[0]] #csp.transform(X_train[locations[0]])  
-			# T_1 = X_train[locations[1]] #csp.transform(X_train[locations[1]])  
-			# # T_2 = csp.transform(X_train[locations[2]])
-
-			# for n1 in range(0, 8):
-			# 	for n2 in range(n1 + 1, 8):
-			# 		plt.scatter(x=T_0[:, n1], y=T_0[:, n2], c='red', alpha=0.1)
-			# 		plt.scatter(x=T_1[:, n1], y=T_1[:, n2], c='blue', alpha=0.1)
-			# 		plt.savefig(f"./results/scatter-csp-{n1}-{n2}.png")
-			# 		plt.clf()
-
-			# exit(1)
-
-			# csp = CSP(n_components=8, reg=None, log=True, norm_trace=False)
-
-			# transformed = csp.fit_transform(X_train, Y_train)
-
-			# csp.plot_patterns(epochs.info, ch_type="eeg", units="Patterns (AU)", size=1.5)
-
-			# plt.savefig("./results/test.png")
-
-			# plt.clf()
-
-			# model.partial_fit(transformed, Y_train, classes=[0,1,-1])
-
-		# pipe.fit(X, Y)
-		# csp = CSP(n_components=8, reg=None, log=True, norm_trace=False)
-
-		# Y_pred = pipe.predict(X_test)
-
-		# print("__--__--DONE--__--__")
-
-		# print(f"--- RESULTS ---")
-		# print(f"{100 * accuracy_score(Y_test, Y_pred):.2f}% correct.")
-		# print(f"{accuracy_score(Y_test, Y_pred, normalize=False):.2f} out of {len(Y_test)} correct.")
-		# print(f"--- RESULTS ---")
 
 
 
