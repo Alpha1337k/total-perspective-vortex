@@ -1,4 +1,5 @@
 import glob
+import mne
 from typing import List
 from matplotlib import pyplot as plt
 from mne.io import read_raw_edf
@@ -7,7 +8,8 @@ from mne.channels import get_builtin_montages, read_custom_montage, make_standar
 
 @validate_call
 def is_target_neuron(id: str) -> bool:
-	return id.startswith('C') or id.startswith('T') or (id.startswith('F') and len(id) == 3 and id.startswith('Fp') == False)
+	return True
+	# return id.find('C') != -1 or id.find('F') != -1
 
 @validate_call
 def make_exclude_list(ch_names: List[str]) -> List[str]:
@@ -48,9 +50,9 @@ def plot(path: str):
 	plt.savefig(f"./results/headcap.png")
 	plt.clf()
 
-	files = sorted(glob.glob("./data/S002/*.edf"))
+	files = sorted(glob.glob("./data/S001/*.edf"))
 
-	# files = ['./data/S001/S001R03.edf']
+	# files = ['./data/S001/S001R04.edf']
 
 	excludes = make_exclude_list(montage.ch_names)
 
@@ -95,7 +97,7 @@ def plot(path: str):
 			print(f"Fraction of {channel_type} variance explained by all components: {ratio}")
 
 
-		ica.plot_sources(raw, show_scrollbars=False)
+		ica.plot_sources(raw, show_scrollbars=False, stop=60)
 
 		plt.savefig(f"{outfile_base}_ica_sources.png")
 
@@ -120,6 +122,4 @@ def plot(path: str):
 		plt.savefig(f"{outfile_base}_ica_components.png")
 
 		plt.clf()
-
-		exit(1)
 
