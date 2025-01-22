@@ -1,6 +1,7 @@
 import pandas as pd
 import argparse
 
+import csp
 import plot
 import train
 
@@ -48,17 +49,19 @@ if __name__ == "__main__":
 	predict_parser.add_argument('--input', type=argparse.FileType('r'), default='./data/validate.csv')
 	predict_parser.add_argument('-w', '--weights', type=argparse.FileType('r'), default='./output/weights.json')
 
+	csp_parser = subparser.add_parser('csp')
+
+
 	args = parser.parse_args()
 
-
-
-	args = parser.parse_args()
 
 	match args.task:
 		case "plot":
 			plot.plot(args.input)
 		case "train":
 			train.train()
+		case "csp":
+			csp.run_csp()
 		# case "split":
 		# 	split_dataset(args.input, args.validation_pct, args.train_path, args.validate_path)
 		# case "train":
