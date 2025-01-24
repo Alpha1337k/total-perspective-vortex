@@ -35,11 +35,22 @@ class CSP42(TransformerMixin, BaseEstimator):
 		R1 = epoch_cov(X1)
 		R2 = epoch_cov(X2)
 
-		print(R1.shape, R2.shape)
-
 		combined = (R1 + R2) + np.eye(R1.shape[0]) * 1e-13
 
-		eigen_values, eigen_vectors = linalg.eigh(R1, combined)
+		tries = 0
+		mults = [1e-11, 1e-10, 1e-8]
+
+		while tries < 3:
+			try:
+				eigen_values, eigen_vectors = linalg.eigh(R1, combined)
+				break
+			except linalg.LinAlgError:
+				print("--- CORRECTING ---")
+				combined = (R1 + R2) + np.eye(R1.shape[0]) * mults[tries]
+				tries += 1
+
+		if (tries == 3):
+			raise Exception("Could not find closure for non positive definite B")
 
 		sorted_index = np.argsort(np.abs(eigen_values - 0.5))[::-1]
 		eigen_vectors = eigen_vectors[:, sorted_index]
@@ -69,7 +80,7 @@ class CSP42(TransformerMixin, BaseEstimator):
 		# XRes /= norm
 		# np.nan_to_num(XRes, False, posinf=0.0, neginf=0.0)
 
-		XRes = (XRes**2).mean(axis=2)
+		XRes = (XRes ** 2).mean(axis=2)
 
 
 		XRes -= self.mean

@@ -52,13 +52,13 @@ def train():
 
 	accuracies = []
 
-	for subject in range(1, 40):
+	for subject in range(1, 110):
 		# csp = CSP(n_components=8, reg=None, log=False, norm_trace=False)
 		epochs = load_data([subject], [i for i in range(3, 15)])
 
 
 		scaler = Scaler(epochs.info)
-		csp = CSP42(n_components=4)
+		csp = CSP42(n_components=8)
 		model = LinearDiscriminantAnalysis(solver='lsqr')
 
 		pipe = Pipeline([("Scaler", scaler), ("CSP", csp), ("EST", model)])
