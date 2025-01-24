@@ -1,8 +1,9 @@
 
 from matplotlib import pyplot as plt
 # from mne.decoding import CSP
+from mne import set_log_level
 import numpy as np
-from numpy import linalg
+from scipy import linalg
 from utils import load_data
 from sklearn.base import BaseEstimator, TransformerMixin
 
@@ -24,20 +25,20 @@ class CSP42(TransformerMixin, BaseEstimator):
 		R1 = np.cov(X1.transpose(1,0,2).reshape(40, -1))
 		R2 = np.cov(X2.transpose(1,0,2).reshape(40, -1))
 
-		combined = (R1 + R2) ** 2 @ R1
+		combined = (R1 + R2)
 
-		eigen_values, eigen_vectors = linalg.eigh(combined)
+		eigen_values, eigen_vectors = linalg.eigh(R1 + R2)
 
-		sorted_index = np.argsort(eigen_values)
+		sorted_index = np.argsort(eigen_values)[::-1]
 		eigen_vectors = eigen_vectors[:, sorted_index]
 
-		self.filter = eigen_vectors[ : self.n_components]
+		self.filter = np.concatenate([eigen_vectors[ : int(self.n_components / 2)], eigen_vectors[ -int(self.n_components / 2) :]])
 		self.normalizer = np.linalg.norm(X1)
 
 		return self
 
 	def transform(self, X):		
-		XRes = np.asarray([self.filter @ x for x in X]).mean(axis=2)
+		XRes = np.asarray([self.filter @ x for x in X]).max(axis=2)
 
 		# XRes = np.log(XRes)
 
@@ -69,6 +70,7 @@ def test_real():
 	plt.clf()
 
 def run_csp():
+	set_log_level(False)
 	epochs = load_data([1], [i for i in range(1,15)])
 
 	components = 8
