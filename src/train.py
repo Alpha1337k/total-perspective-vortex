@@ -54,12 +54,14 @@ def train():
 
 	for subject in range(1, 40):
 		# csp = CSP(n_components=8, reg=None, log=False, norm_trace=False)
-		csp = CSP42(n_components=8)
+		epochs = load_data([subject], [i for i in range(3, 15)])
+
+
+		scaler = Scaler(epochs.info)
+		csp = CSP42(n_components=4)
 		model = LinearDiscriminantAnalysis(solver='lsqr')
 
-		pipe = Pipeline([("CSP", csp), ("EST", model)])
-
-		epochs = load_data([subject], [i for i in range(3, 15)])
+		pipe = Pipeline([("Scaler", scaler), ("CSP", csp), ("EST", model)])
 
 		X = epochs.get_data(copy=False).astype(np.float64)
 		Y = epochs.events[:, -1] - 1
@@ -83,8 +85,8 @@ def train():
 
 			accuracies.append(acc)
 
-			scores = cross_val_score(pipe, X, Y, cv=KFold(n_splits=5, shuffle = True))
-			print(f"{100 * scores.mean():0.2f}% accuracy with a standard deviation of {100 * scores.std():0.2f}%" )
+			# scores = cross_val_score(pipe, X, Y, cv=KFold(n_splits=5, shuffle = True))
+			# print(f"{100 * scores.mean():0.2f}% accuracy with a standard deviation of {100 * scores.std():0.2f}%" )
 		
 		
 		print(f"======== Total accuracy: {sum(accuracies) / len(accuracies) * 100:0.2f}%")

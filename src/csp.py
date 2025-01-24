@@ -1,6 +1,6 @@
 
 from matplotlib import pyplot as plt
-# from mne.decoding import CSP
+from mne.decoding import CSP
 from mne import set_log_level
 import numpy as np
 from scipy import linalg
@@ -10,9 +10,12 @@ from sklearn.base import BaseEstimator, TransformerMixin
 class CSP42(TransformerMixin, BaseEstimator):
 	filter = None
 	normalizer = None
+	mean = 0.0
+	std = 0.0
 
 	def __init__(self, *, n_components=4):
 		self.n_components = n_components
+
 	def fit(self, X, y):
 		X1: np.ndarray = X[np.where(y == 0)]
 		X2: np.ndarray = X[np.where(y == 1)]
@@ -25,27 +28,52 @@ class CSP42(TransformerMixin, BaseEstimator):
 		R1 = np.cov(X1.transpose(1,0,2).reshape(40, -1))
 		R2 = np.cov(X2.transpose(1,0,2).reshape(40, -1))
 
-		combined = (R1 + R2)
+		def epoch_cov(X):
+			XData = X.transpose(1,0,2).reshape(40, -1)
+			return np.cov(XData)
 
-		eigen_values, eigen_vectors = linalg.eigh(R1 + R2)
+		R1 = epoch_cov(X1)
+		R2 = epoch_cov(X2)
 
-		sorted_index = np.argsort(eigen_values)[::-1]
+		print(R1.shape, R2.shape)
+
+		combined = (R1 + R2) + np.eye(R1.shape[0]) * 1e-13
+
+		eigen_values, eigen_vectors = linalg.eigh(R1, combined)
+
+		sorted_index = np.argsort(np.abs(eigen_values - 0.5))[::-1]
 		eigen_vectors = eigen_vectors[:, sorted_index]
 
-		self.filter = np.concatenate([eigen_vectors[ : int(self.n_components / 2)], eigen_vectors[ -int(self.n_components / 2) :]])
+		self.filter = eigen_vectors.T[: self.n_components]
+
+		print(self.filter.shape, self.filter.mean(axis=1))
+
 		self.normalizer = np.linalg.norm(X1)
+
+		X = (X ** 2).mean(axis=2)
+
+		self.mean = X.mean()
+		self.std  = X.std()
 
 		return self
 
 	def transform(self, X):		
-		XRes = np.asarray([self.filter @ x for x in X]).max(axis=2)
+		XRes = np.asarray([self.filter @ x for x in X])
 
+
+		# assert(XRes.shape[1] == self.n_components)
 		# XRes = np.log(XRes)
 
 		# norm = np.linalg.norm(XRes)
 
 		# XRes /= norm
 		# np.nan_to_num(XRes, False, posinf=0.0, neginf=0.0)
+
+		XRes = (XRes**2).mean(axis=2)
+
+
+		XRes -= self.mean
+		XRes /= self.std
 		
 		return XRes
 
@@ -95,14 +123,14 @@ def run_csp():
 
 	print("Divided: ", X1.shape, X2.shape)
 
-	csp = CSP42(n_components=8)
+	csp = CSP42(n_components=4)
 
 	XRes = csp.fit_transform(X, Y)
 
 	X1Res: np.ndarray = XRes[np.where(Y == 0)]
 	X2Res: np.ndarray = XRes[np.where(Y == 1)]
 
-	plt.scatter(X1Res[:, 1], X1Res[:, 4], c='blue')
-	plt.scatter(X2Res[:, 1], X2Res[:, 4], c='red')
+	plt.scatter(X1Res[:, 1], X1Res[:, 3], c='blue')
+	plt.scatter(X2Res[:, 1], X2Res[:, 3], c='red')
 	plt.savefig("results/csp/after.png")
 	plt.clf()
