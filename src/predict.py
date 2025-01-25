@@ -11,8 +11,14 @@ from utils import load_data
 
 
 @validate_call
-def predict(subject: int, recording: int):
-	pipe: Pipeline = pickle.load(open(f"./models/S{1:03d}.pkl", 'rb'))
+def predict(subject: int, recording: int, super: bool):
+	pipe: Pipeline
+	
+	if super:
+		pipe = pickle.load(open(f"./models/Super.pkl", 'rb'))
+	else:
+		pipe = pickle.load(open(f"./models/{subject:02d}.pkl", 'rb'))
+
 	set_log_level(False)
 
 	epochs = load_data([subject], [recording])

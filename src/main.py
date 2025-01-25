@@ -49,6 +49,7 @@ if __name__ == "__main__":
 	predict_parser = subparser.add_parser('predict')
 	predict_parser.add_argument('-s', '--subject', type=int, choices=xrange(1,110), required=True)
 	predict_parser.add_argument('-r', '--run', type=int, choices=xrange(3,15), required=True)
+	predict_parser.add_argument('-S', '--super', action=argparse.BooleanOptionalAction, default=False)
 
 	csp_parser = subparser.add_parser('csp')
 
@@ -64,7 +65,7 @@ if __name__ == "__main__":
 		case "csp":
 			csp.run_csp()
 		case "predict":
-			predict.predict(args.subject, args.run)
+			predict.predict(args.subject, args.run, args.super)
 		# case "split":
 		# 	split_dataset(args.input, args.validation_pct, args.train_path, args.validate_path)
 		# case "train":
