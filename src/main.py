@@ -5,6 +5,7 @@ import argparse
 import csp
 import plot
 import predict
+import score
 import train
 
 def load_df(input):
@@ -52,6 +53,8 @@ if __name__ == "__main__":
 	predict_parser.add_argument('-S', '--super', action=argparse.BooleanOptionalAction, default=False)
 
 	csp_parser = subparser.add_parser('csp')
+	score_parser = subparser.add_parser('score')
+
 
 
 	args = parser.parse_args()
@@ -64,6 +67,8 @@ if __name__ == "__main__":
 			train.train()
 		case "csp":
 			csp.run_csp()
+		case "score":
+			score.score()
 		case "predict":
 			predict.predict(args.subject, args.run, args.super)
 		# case "split":

@@ -19,7 +19,7 @@ def load_data(sessions: List[int], runs: List[int]):
 
 	excluded_channels = make_exclude_list(montage.ch_names)
 
-	print("Loading sessions")
+	# print("Loading sessions")
 
 	for session in sessions:
 		# print(f"LOADING session #{session} ({len(raws)})")
@@ -39,7 +39,7 @@ def load_data(sessions: List[int], runs: List[int]):
 					)
 			raws.append(raw)
 
-	print("Done!")
+	# print("Done loading sessions. Concatenating + splitting.")
 
 	raw = concatenate_raws(raws)
 
@@ -62,6 +62,6 @@ def load_data(sessions: List[int], runs: List[int]):
 		preload=True,
 	)
 
-	print("Splitted!")
+	# print("Splitted!")
 
 	return epochs

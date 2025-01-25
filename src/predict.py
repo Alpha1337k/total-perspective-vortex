@@ -12,12 +12,7 @@ from utils import load_data
 
 @validate_call
 def predict(subject: int, recording: int, super: bool):
-	pipe: Pipeline
-	
-	if super:
-		pipe = pickle.load(open(f"./models/Super.pkl", 'rb'))
-	else:
-		pipe = pickle.load(open(f"./models/{subject:02d}.pkl", 'rb'))
+	pipe = pickle.load(open(f"./models/S{subject:03d}.pkl", 'rb'))
 
 	set_log_level(False)
 

@@ -1,6 +1,6 @@
 
 from matplotlib import pyplot as plt
-from mne.decoding import CSP
+from mne.decoding import CSP, Scaler
 from mne import set_log_level
 import numpy as np
 from scipy import linalg
@@ -57,62 +57,37 @@ class CSP42(TransformerMixin, BaseEstimator):
 
 		self.filter = eigen_vectors.T[: self.n_components]
 
-		print(self.filter.shape, self.filter.mean(axis=1))
+		# print(self.filter.shape, self.filter.mean(axis=1))
 
-		self.normalizer = np.linalg.norm(X1)
-
-		X = (X ** 2).mean(axis=2)
-
-		self.mean = X.mean()
-		self.std  = X.std()
+		self.normalize(X, True)
 
 		return self
+	
+	def normalize(self, X, train: bool):
+		X = np.mean(X ** 2, axis=2)
+
+		if (train):
+			self.mean = X.mean()
+			self.std  = X.std()
+
+
+		X /= self.std
+		X -= self.mean
+
+		return X
 
 	def transform(self, X):		
 		XRes = np.asarray([self.filter @ x for x in X])
-
-
-		# assert(XRes.shape[1] == self.n_components)
-		# XRes = np.log(XRes)
-
-		# norm = np.linalg.norm(XRes)
-
-		# XRes /= norm
-		# np.nan_to_num(XRes, False, posinf=0.0, neginf=0.0)
-
-		XRes = (XRes ** 2).mean(axis=2)
-
-
-		XRes -= self.mean
-		XRes /= self.std
 		
-		return XRes
-
-
-def test_real():
-	csp = CSP(n_components=4)
-	epochs = load_data([1], [i for i in range(1,14)])
-
-	X = epochs.get_data(copy=False)
-	Y = epochs.events[:, -1] - 1
-
-	print(Y[0:1])
-
-	csp.fit(X, Y)
-
-	X1Res = csp.transform(X[0:1])
-	X2Res = csp.transform(X[1:2])
-	
-	plt.scatter(X1Res[0][0], X1Res[0][1], c='blue')
-	plt.scatter(X2Res[0][0], X2Res[0][1], c='red')
-	plt.savefig("results/csp/after.png")
-	plt.clf()
+		return self.normalize(XRes, train=False)
 
 def run_csp():
 	set_log_level(False)
-	epochs = load_data([1], [i for i in range(1,15)])
+	epochs = load_data([1], [i for i in range(3,15)])
 
-	components = 8
+	n_components=8
+
+	csp = CSP42(n_components=n_components)
 
 	X = epochs.get_data(copy=False)
 	Y = epochs.events[:, -1] - 1
@@ -127,21 +102,17 @@ def run_csp():
 	X1: np.ndarray = X[np.where(Y == 0)]
 	X2: np.ndarray = X[np.where(Y == 1)]
 
-	plt.scatter(X1[:, 0], X1[:, 2], c='red')
-	plt.scatter(X2[:, 0], X2[:, 2], c='blue')
-	plt.savefig("results/csp/before.png")
-	plt.clf()
-
-	print("Divided: ", X1.shape, X2.shape)
-
-	csp = CSP42(n_components=4)
 
 	XRes = csp.fit_transform(X, Y)
+
 
 	X1Res: np.ndarray = XRes[np.where(Y == 0)]
 	X2Res: np.ndarray = XRes[np.where(Y == 1)]
 
-	plt.scatter(X1Res[:, 1], X1Res[:, 3], c='blue')
-	plt.scatter(X2Res[:, 1], X2Res[:, 3], c='red')
-	plt.savefig("results/csp/after.png")
-	plt.clf()
+
+	for i in range(n_components):
+		for n in range(i + 1, n_components):
+			plt.scatter(X1Res[:, i], X1Res[:, n], c='red', alpha=0.1)
+			plt.scatter(X2Res[:, i], X2Res[:, n], c='blue', alpha=0.1)
+			plt.savefig(f"results/csp/{i}-{n}.png")
+			plt.clf()
