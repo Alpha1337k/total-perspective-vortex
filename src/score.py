@@ -22,13 +22,13 @@ def score():
 	set_log_level(False)
 
 	accuracies = [0. for i in range(len(experiments))]
-
+	total_subjects=110
 
 	for experiment_id, experiment in enumerate(experiments):
 		for subject in range(1, total_subjects):
 			pipe: Pipeline = pickle.load(open(f'./models/S{subject:03d}.pkl', 'rb'))
 
-			epochs = load_data([subject], [i for i in range(3, 15)])
+			epochs = load_data([subject], experiment)
 			
 			X = epochs.get_data(copy=False)
 			Y = epochs.events[:, -1] - 1
