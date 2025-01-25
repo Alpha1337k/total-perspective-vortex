@@ -38,7 +38,7 @@ class CSP42(TransformerMixin, BaseEstimator):
 		combined = (R1 + R2) + np.eye(R1.shape[0]) * 1e-13
 
 		tries = 0
-		mults = [1e-11, 1e-10, 1e-8]
+		mults = [1e-12, 1e-11, 1e-8]
 
 		while tries < 3:
 			try:

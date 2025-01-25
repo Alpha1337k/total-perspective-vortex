@@ -1,8 +1,10 @@
+from joblib.numpy_pickle_utils import xrange
 import pandas as pd
 import argparse
 
 import csp
 import plot
+import predict
 import train
 
 def load_df(input):
@@ -45,9 +47,8 @@ if __name__ == "__main__":
 	test_parser.add_argument('--input', type=argparse.FileType('r'), default='./data/train.csv')
 
 	predict_parser = subparser.add_parser('predict')
-	predict_parser.add_argument('-c', '--config', type=argparse.FileType('r'), default='./config.py')
-	predict_parser.add_argument('--input', type=argparse.FileType('r'), default='./data/validate.csv')
-	predict_parser.add_argument('-w', '--weights', type=argparse.FileType('r'), default='./output/weights.json')
+	predict_parser.add_argument('-s', '--subject', type=int, choices=xrange(1,110), required=True)
+	predict_parser.add_argument('-r', '--run', type=int, choices=xrange(3,15), required=True)
 
 	csp_parser = subparser.add_parser('csp')
 
@@ -62,6 +63,8 @@ if __name__ == "__main__":
 			train.train()
 		case "csp":
 			csp.run_csp()
+		case "predict":
+			predict.predict(args.subject, args.run)
 		# case "split":
 		# 	split_dataset(args.input, args.validation_pct, args.train_path, args.validate_path)
 		# case "train":

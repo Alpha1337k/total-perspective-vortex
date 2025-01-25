@@ -13,6 +13,7 @@ from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import KFold, ShuffleSplit, cross_val_predict, cross_val_score, train_test_split
 from sklearn.pipeline import Pipeline
+import pickle
 
 from csp import CSP42
 from plot import make_exclude_list
@@ -85,9 +86,12 @@ def train():
 
 			accuracies.append(acc)
 
-			# scores = cross_val_score(pipe, X, Y, cv=KFold(n_splits=5, shuffle = True))
-			# print(f"{100 * scores.mean():0.2f}% accuracy with a standard deviation of {100 * scores.std():0.2f}%" )
+			scores = cross_val_score(pipe, X, Y, cv=KFold(n_splits=5, shuffle = True))
+			print(f"cross_val_accuracy: {100 * scores.mean():0.2f}% accuracy with a standard deviation of {100 * scores.std():0.2f}%" )
 		
+
+		with open(f"./models/S{subject:03d}.pkl", 'wb') as file:
+			pickle.dump(pipe, file)
 		
 		print(f"======== Total accuracy: {sum(accuracies) / len(accuracies) * 100:0.2f}%")
 
