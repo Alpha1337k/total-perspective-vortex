@@ -56,9 +56,9 @@ def load_data(sessions: List[int], runs: List[int]):
 		event_id=["hands", "feet"],
 		picks=picks,
 		baseline=None,
-		# detrend=1,
-		# tmin=1,
-		# tmax=2,
+		detrend=0,
+		tmin=0.2,
+		tmax=2.2,
 		preload=True,
 	)
 
