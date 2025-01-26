@@ -6,20 +6,25 @@ from mne.datasets.eegbci import standardize
 from mne.io import read_raw_edf
 from pydantic import ConfigDict, validate_call
 
-from plot import make_exclude_list
-
-
 model_config = ConfigDict(arbitrary_types_allowed=True)
+
+@validate_call
+def is_target_neuron(id: str) -> bool:
+	if (id.find('Tp') != -1):
+		return False
+	
+	return id.find('C') != -1 or id.find('F') != -1 or id.startswith("T")
+
+@validate_call
+def make_exclude_list(ch_names: List[str]) -> List[str]:
+	return list(filter(lambda x: is_target_neuron(x) == False, ch_names))
 
 @validate_call
 def load_data(sessions: List[int], runs: List[int]):
 	raws = []
 
 	montage = read_custom_montage("./data/custom_fixture.txt")
-
 	excluded_channels = make_exclude_list(montage.ch_names)
-
-	# print("Loading sessions")
 
 	for session in sessions:
 		# print(f"LOADING session #{session} ({len(raws)})")
@@ -39,14 +44,10 @@ def load_data(sessions: List[int], runs: List[int]):
 					)
 			raws.append(raw)
 
-	# print("Done loading sessions. Concatenating + splitting.")
-
 	raw = concatenate_raws(raws)
+	raw.set_montage(montage)
 
 	raws = None
-
-	# print(excluded_channels)
-	raw.set_montage(montage)
 
 	picks = pick_types(raw.info, meg=False, eeg=True, stim=False, eog=False, exclude="bads")
 
@@ -61,7 +62,5 @@ def load_data(sessions: List[int], runs: List[int]):
 		tmax=2.2,
 		preload=True,
 	)
-
-	# print("Splitted!")
 
 	return epochs

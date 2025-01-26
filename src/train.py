@@ -1,28 +1,15 @@
 
-from typing import Any, List, Tuple
-from matplotlib import pyplot as plt
-from mne import Epochs, concatenate_raws, pick_types, set_log_level
-from mne.channels import make_standard_montage, read_custom_montage
-from mne.decoding import CSP, Scaler
-from mne.io import BaseRaw, read_raw_edf
+from mne import set_log_level
+from mne.decoding import Scaler
 import numpy as np
-from pydantic import ConfigDict, validate_call
-from mne.datasets.eegbci import standardize
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
-from sklearn.linear_model import LogisticRegression, SGDClassifier
-from sklearn.metrics import accuracy_score
-from sklearn.model_selection import KFold, ShuffleSplit, cross_val_predict, cross_val_score, train_test_split
+from pydantic import ConfigDict
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.model_selection import KFold, cross_val_score, train_test_split
 from sklearn.pipeline import Pipeline
 import pickle
 
-from sklearn.preprocessing import MaxAbsScaler, MinMaxScaler, RobustScaler, StandardScaler
-
 from csp import CSP42
-from plot import make_exclude_list
 from utils import load_data
-from sklearn.neural_network import MLPClassifier
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.svm import SVC
 
 model_config = ConfigDict(arbitrary_types_allowed=True)
 
@@ -30,7 +17,10 @@ def train():
 	set_log_level(False)
 
 	total_accuracy = 0
-	total_subjects=110
+	total_subjects=80
+
+	superX = []
+	superY = []
 
 	for subject in range(1, total_subjects):
 		print(f"=== SUBJECT #{subject:03d}")
@@ -70,9 +60,3 @@ def train():
 		print(f"=== SUBJECT #{subject:03d}\n")
 
 		print(f"Total: {total_accuracy / (subject) * 100:0.2f}%")
-
-
-
-
-
-

@@ -11,7 +11,7 @@ from utils import load_data
 
 
 @validate_call
-def predict(subject: int, recording: int, super: bool):
+def predict(subject: int, recording: int):
 	pipe = pickle.load(open(f"./models/S{subject:03d}.pkl", 'rb'))
 
 	set_log_level(False)
@@ -26,8 +26,6 @@ def predict(subject: int, recording: int, super: bool):
 	predictions = pipe.predict(X)
 
 	for i, (prediction, y) in enumerate(zip(predictions, Y)):
-
-
 		print(f"epoch {i:02d}:\tReal: [{y}]\t Pred: {prediction}\t{prediction == y}")
 
 		if prediction == y:

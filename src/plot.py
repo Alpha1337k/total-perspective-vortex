@@ -7,17 +7,6 @@ from pydantic import validate_call
 from mne.channels import get_builtin_montages, read_custom_montage, make_standard_montage
 
 @validate_call
-def is_target_neuron(id: str) -> bool:
-	if (id.find('Tp') != -1):
-		return False
-	
-	return id.find('C') != -1 or id.find('F') != -1 or id.startswith("T")
-
-@validate_call
-def make_exclude_list(ch_names: List[str]) -> List[str]:
-	return list(filter(lambda x: is_target_neuron(x) == False, ch_names))
-
-@validate_call
 def plot_signals(outfile_base: str, raw):
 	plt.clf()
 

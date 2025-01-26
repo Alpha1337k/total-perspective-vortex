@@ -30,59 +30,22 @@ class CSP42(TransformerMixin, BaseEstimator):
 		R1 = np.cov(X1.transpose(1,0,2).reshape(X.shape[1], -1))
 		R2 = np.cov(X2.transpose(1,0,2).reshape(X.shape[1], -1))
 
-		def epoch_cov(X):
-			XData = X.transpose(1,0,2).reshape(X.shape[1], -1)
-			return np.cov(XData)
-
-		R1 = epoch_cov(X1)
-		R2 = epoch_cov(X2)
-
 		combined = np.asarray([R1, R2]).sum(axis=0) + np.eye(R1.shape[0]) * 1e-5
 
-		tries = 0
-		mults = [1e-12, 1e-11, 1e-10, 1e-8]
-
-		while tries < len(mults):
-			try:
-				eigen_values, eigen_vectors = linalg.eigh(R1, combined)
-				break
-			except linalg.LinAlgError:
-				# print("--- CORRECTING ---")
-				combined = (R1 + R2) + np.eye(R1.shape[0]) * mults[tries]
-				tries += 1
-
-		if (tries == len(mults)):
-			raise Exception("Could not find closure for non positive definite B")
+		eigen_values, eigen_vectors = linalg.eigh(R1, combined)
 
 		sorted_index = np.argsort(np.abs(eigen_values - 0.5))[::-1]
 		eigen_vectors = eigen_vectors[:, sorted_index]
 
 		self.filter = eigen_vectors.T[: self.n_components]
 
-		# print(self.filter.shape, self.filter.mean(axis=1))
-		XRes = np.asarray([self.filter @ x for x in X])
-
-		self.normalize(XRes, True)
-
 		return self
-	
-	def normalize(self, X, train: bool):
-		X = np.mean(X ** 2, axis=2)
-
-		# if (train):
-		# 	self.mean = X.mean()
-		# 	self.std  = X.std()
-
-
-		# X /= self.std
-		# X -= self.mean
-
-		return X
 
 	def transform(self, X):		
 		XRes = np.asarray([self.filter @ x for x in X])
+		X = np.mean(XRes ** 2, axis=2)
 		
-		return self.normalize(XRes, train=False)
+		return X
 
 def run_csp():
 	set_log_level(False)
@@ -96,10 +59,6 @@ def run_csp():
 	Y = epochs.events[:, -1] - 1
 
 	print(X.shape)
-
-	# X = X.mean(axis=1)
-	# print(X.shape)
-
 	print(Y)
 
 	X1: np.ndarray = X[np.where(Y == 0)]
