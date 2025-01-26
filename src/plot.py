@@ -6,6 +6,8 @@ from mne.io import read_raw_edf
 from pydantic import validate_call
 from mne.channels import get_builtin_montages, read_custom_montage, make_standard_montage
 
+from utils import make_exclude_list
+
 @validate_call
 def plot_signals(outfile_base: str, raw):
 	plt.clf()
